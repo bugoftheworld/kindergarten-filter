@@ -3,279 +3,554 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三峽區幼兒園篩選</title>
+    <title>Dolly 生活工具箱</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+            background: #f5f7fa;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            color: #333;
         }
         .container {
             max-width: 900px;
             margin: 0 auto;
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             padding: 30px;
             text-align: center;
         }
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 28px;
+        .header h1 { margin: 0 0 8px 0; font-size: 24px; color: #2c3e50; }
+        .header p { margin: 0; color: #666; font-size: 14px; }
+        .tabs {
+            display: flex;
+            background: #fafbfc;
+            border-bottom: 1px solid #eee;
         }
-        .header p {
-            margin: 0;
-            opacity: 0.9;
+        .tab {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #888;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
         }
+        .tab.active {
+            color: #5ebdbd;
+            border-bottom-color: #5ebdbd;
+        }
+        .tab-section { display: none; }
+        .tab-section.active { display: block; }
+        
+        /* Filters */
         .filters {
-            padding: 25px;
-            background: #f8f9fa;
+            padding: 20px 25px;
+            background: #fafbfc;
             border-bottom: 1px solid #eee;
         }
         .filter-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 12px;
         }
         .filter-group {
             flex: 1;
-            min-width: 200px;
+            min-width: 150px;
         }
         .filter-group label {
             display: block;
+            font-size: 13px;
             font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
+            margin-bottom: 6px;
+            color: #555;
         }
-        .filter-group select, .filter-group input {
+        .filter-group select {
             width: 100%;
-            padding: 10px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
+            padding: 10px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
             font-size: 14px;
-            transition: border-color 0.3s;
-        }
-        .filter-group select:focus, .filter-group input:focus {
-            outline: none;
-            border-color: #4facfe;
-        }
-        .results {
-            padding: 20px;
-        }
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .results-count {
-            font-size: 16px;
-            color: #666;
-        }
-        .results-count strong {
-            color: #4facfe;
-            font-size: 20px;
-        }
-        .kindergarten-card {
             background: white;
-            border: 1px solid #e8e8e8;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-            border-left: 4px solid #4facfe;
+            cursor: pointer;
         }
-        .kindergarten-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        
+        /* Results */
+        .results { padding: 20px; }
+        .results-header { margin-bottom: 16px; font-size: 14px; color: #888; }
+        .results-header strong { color: #5ebdbd; }
+        
+        /* Cards */
+        .kindergarten-card, .route-card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 12px;
+            border-left: 4px solid #a8edea;
         }
-        .kindergarten-card.top {
-            border-left-color: #ffd700;
-            background: linear-gradient(135deg, #fffbf0 0%, #fff8e7 100%);
+        .kindergarten-card.top, .route-card.recommended { 
+            border-left-color: #5ebdbd; 
+            background: #fafffb; 
+        }
+        .route-card.best { 
+            border-left-color: #27ae60; 
+            background: #f0fdf4; 
         }
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
+            align-items: center;
+            margin-bottom: 10px;
         }
-        .card-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #333;
-            margin: 0;
-        }
+        .card-title { font-size: 16px; font-weight: 600; color: #333; }
         .card-badge {
-            display: inline-block;
-            padding: 4px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-public {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-        .badge-nonprofit {
-            background: #f3e5f5;
-            color: #7b1fa2;
-        }
-        .card-distance {
-            font-size: 24px;
-            font-weight: 700;
-            color: #4facfe;
-        }
-        .card-distance small {
-            font-size: 14px;
-            color: #666;
-            font-weight: normal;
-        }
-        .card-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin: 15px 0;
-        }
-        .info-item {
-            font-size: 14px;
-            color: #555;
-        }
-        .info-item strong {
-            color: #333;
-        }
-        .convenience-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
-        }
-        .tag {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
         }
-        .tag-excellent {
-            background: #c8e6c9;
-            color: #2e7d32;
+        .badge-public { background: #e8f4f8; color: #3498db; }
+        .badge-nonprofit { background: #f5eef8; color: #9b59b6; }
+        .badge-best { background: #e8f5e9; color: #27ae60; }
+        .badge-recommended { background: #e3f2fd; color: #2980b9; }
+        .badge-alternative { background: #fff8e1; color: #f39c12; }
+        
+        .card-distance {
+            font-size: 20px;
+            font-weight: 700;
+            color: #5ebdbd;
+            margin: 10px 0;
         }
-        .tag-good {
-            background: #bbdefb;
-            color: #1565c0;
+        .card-distance small { font-size: 13px; color: #999; font-weight: normal; }
+        .card-info { font-size: 13px; color: #666; margin: 8px 0; }
+        .card-info strong { color: #444; }
+        
+        .convenience-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
         }
-        .tag-warning {
-            background: #ffecb3;
-            color: #f57c00;
-        }
+        .tag-excellent { background: #e8f5e9; color: #27ae60; }
+        .tag-good { background: #e3f2fd; color: #2980b9; }
+        .tag-warning { background: #fff8e1; color: #f39c12; }
+        
         .rank-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: #ffd700;
-            color: #333;
-            font-weight: bold;
-            font-size: 14px;
-            margin-right: 10px;
+            background: #a8edea;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 12px;
+            margin-right: 8px;
         }
-        .no-results {
+        .no-results { text-align: center; padding: 40px; color: #aaa; }
+        .kindergarten-card a { text-decoration: none; color: inherit; display: block; }
+        
+        /* Route specific styles */
+        .route-summary {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        .route-stat {
             text-align: center;
-            padding: 40px;
-            color: #999;
+        }
+        .route-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #5ebdbd;
+        }
+        .route-stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+        .route-steps {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .route-steps ol {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        .route-steps li {
+            margin: 5px 0;
+            color: #555;
+        }
+        .route-cost {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #fff8e1;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .route-pros-cons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .route-pros, .route-cons {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        .route-pros { background: #e8f5e9; }
+        .route-cons { background: #ffebee; }
+        .route-pros strong, .route-cons strong { display: block; margin-bottom: 5px; }
+        
+        /* Map link button */
+        .map-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #5ebdbd;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .map-link:hover { background: #4da8a8; }
+        
+        /* Route selector */
+        .route-filter {
+            padding: 15px 25px;
+            background: #fafbfc;
+            border-bottom: 1px solid #eee;
+        }
+        .route-filter select {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎓 三峽區幼兒園篩選</h1>
-            <p>📍 起點：青鳥之森（橫溪路99巷64號）</p>
+            <h1>🎒 Dolly 生活工具箱</h1>
+            <p>育兒、求職、交通一手掌握</p>
         </div>
         
-        <div class="filters">
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label>🚗 開車時間</label>
-                    <select id="filterTime">
-                        <option value="all">不限</option>
-                        <option value="5">5分鐘以內</option>
-                        <option value="10">10分鐘以內</option>
-                        <option value="15">15分鐘以內</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>🏫 類型</label>
-                    <select id="filterType">
-                        <option value="all">不限</option>
-                        <option value="公立">公立</option>
-                        <option value="非營利">非營利</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>✨ 接送便利度</label>
-                    <select id="filterConvenience">
-                        <option value="all">不限</option>
-                        <option value="excellent">✅✅ 極佳</option>
-                        <option value="good">✅ 良好</option>
-                    </select>
-                </div>
+        <div class="tabs">
+            <div class="tab active" data-tab="commute">🚗 通勤方案</div>
+            <div class="tab" data-tab="kindergarten">🎓 幼兒園</div>
+        </div>
+        
+        <!-- 通勤方案 Section -->
+        <div class="tab-section active" id="commute-section">
+            <div class="route-filter">
+                <select id="routeFilter">
+                    <option value="all">全部方案</option>
+                    <option value="best">最推薦</option>
+                    <option value="fastest">最快</option>
+                    <option value="cheapest">最省錢</option>
+                    <option value="weather">雨天備案</option>
+                </select>
+            </div>
+            <div class="results">
+                <div class="results-header">共 <strong id="routeCount">5</strong> 種通勤方案</div>
+                <div id="routeResults"></div>
             </div>
         </div>
         
-        <div class="results">
-            <div class="results-header">
-                <span class="results-count">共找到 <strong id="resultCount">0</strong> 間</span>
+        <!-- 幼兒園 Section -->
+        <div class="tab-section" id="kindergarten-section">
+            <div class="tabs" style="background: white;">
+                <div class="tab active" data-area="sanxia">三峽區 (19間)</div>
             </div>
-            <div id="results"></div>
+            <div class="filters">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>🚗 開車時間</label>
+                        <select id="filterTime">
+                            <option value="all">不限</option>
+                            <option value="10">10分鐘以內</option>
+                            <option value="15">15分鐘以內</option>
+                            <option value="20">20分鐘以內</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>🏫 類型</label>
+                        <select id="filterType">
+                            <option value="all">不限</option>
+                            <option value="公立">公立</option>
+                            <option value="非營利">非營利</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="results">
+                <div class="results-header">共找到 <strong id="resultCount">0</strong> 間</div>
+                <div id="results"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        const data = [
-            { rank: 1, name: "市立三峽幼兒園本園", address: "溪東路218巷1號2樓", time: 4, type: "公立", convenience: "warning", tags: ["⚠️ 巷內臨停"], age: "3-5歲" },
-            { rank: 2, name: "市立三峽幼兒園中興分班", address: "介壽路二段136巷63號", time: 4, type: "公立", convenience: "warning", tags: ["⚠️ 巷內臨停"], age: "3-5歲" },
-            { rank: 3, name: "市立三峽幼兒園龍埔分班", address: "三樹路214巷9號", time: 4, type: "公立", convenience: "warning", tags: ["⚠️ 巷內臨停"], age: "3-5歲" },
-            { rank: 4, name: "龍埔成長非營利幼兒園", address: "大學路6號", time: 5, type: "非營利", convenience: "excellent", tags: ["✅✅ 室外2000坪", "有專屬接送區"], age: "2-5歲", people: 90 },
-            { rank: 5, name: "安溪非營利幼兒園", address: "中華路42號", time: 6, type: "非營利", convenience: "warning", tags: ["⚠️ 空間較小"], age: "2-5歲", people: 136 },
-            { rank: 6, name: "介壽國小附設幼兒園", address: "大同路1號", time: 6, type: "公立", convenience: "good", tags: ["✅ 國小校內", "空間大"], age: "2-5歲", people: 212 },
-            { rank: 7, name: "中園非營利幼兒園", address: "弘園街22號", time: 6, type: "非營利", convenience: "good", tags: ["✅ 室外470坪"], age: "2-5歲", people: 136 },
-            { rank: 8, name: "建安國小附設幼兒園", address: "建安路67號", time: 7, type: "公立", convenience: "good", tags: ["✅ 國小校內", "空間大"], age: "3-5歲", people: 30 },
-            { rank: 9, name: "安溪國中附設幼兒園", address: "溪安街181號", time: 8, type: "公立", convenience: "good", tags: ["✅ 國中校內", "空間大"], age: "2-5歲", people: 166 },
-            { rank: 10, name: "國教院員工子女非營利幼兒園", address: "三樹路2號", time: 7, type: "非營利", convenience: "warning", tags: ["⚠️ 空間適中"], age: "2-5歲", people: 75 },
-            { rank: 11, name: "北大非營利幼兒園", address: "國光街100號", time: 8, type: "非營利", convenience: "good", tags: ["✅ 室外1100坪"], age: "2-5歲", people: 182 },
-            { rank: 12, name: "三峽國中附設幼兒園", address: "復興路238號", time: 9, type: "公立", convenience: "good", tags: ["✅ 國中校內", "空間大"], age: "2-5歲", people: 76 },
-            { rank: 13, name: "三峽國小附設幼兒園", address: "中山路16號", time: 10, type: "公立", convenience: "good", tags: ["✅ 國小校內", "空間大"], age: "3-5歲", people: 180 },
-            { rank: 14, name: "民義國小附設幼兒園", address: "白雞路40號", time: 10, type: "公立", convenience: "warning", tags: ["⚠️ 偏鄉"], age: "3-5歲", people: 30 },
-            { rank: 15, name: "大埔國小附設幼兒園", address: "大埔路130號", time: 12, type: "公立", convenience: "warning", tags: ["⚠️ 偏鄉"], age: "3-5歲", people: 60 },
-            { rank: 16, name: "漢翔非營利幼兒園", address: "大學路218號", time: 9, type: "非營利", convenience: "warning", tags: ["⚠️ 室外僅125坪"], age: "2-5歲", people: 76 },
-            { rank: 17, name: "插角森林實驗小學附設幼兒園", address: "插角39號", time: 18, type: "公立", convenience: "warning", tags: ["⚠️ 偏鄉"], age: "3-5歲", people: 30 },
-            { rank: 18, name: "五寮國小附設幼兒園", address: "五寮里69號", time: 22, type: "公立", convenience: "warning", tags: ["⚠️ 偏鄉"], age: "3-5歲", people: 30 },
-            { rank: 19, name: "有木國小附設幼兒園", address: "有木里131號", time: 28, type: "公立", convenience: "warning", tags: ["⚠️ 偏鄉"], age: "3-5歲", people: 30 }
+        // ========== 通勤方案資料 ==========
+        const commuteData = [
+            {
+                rank: 1,
+                name: "方案A：老公全程開車",
+                shortName: "老公開車",
+                totalTime: "45-50分鐘",
+                totalCost: "油資 + 停車費",
+                badges: ["best", "recommended"],
+                tags: ["最省事", "不用趕"],
+                summary: { time: "45-50", cost: "$$$", convenience: "★★★★★" },
+                steps: [
+                    "老公早上從汐止開車出發",
+                    "先送小孩到北峰國小附幼",
+                    "老公繼續開到公司，松仁路100號",
+                    "Dolly 到公司與老公會合"
+                ],
+                pros: ["不需要自己趕時間", "小孩有人照顧到進教室", "風雨無慮"],
+                cons: ["老公時間不彈性", "需要配合老公行程"],
+                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市"
+            },
+            {
+                rank: 2,
+                name: "方案B：機車全程（老公載）",
+                shortName: "老公騎機車",
+                totalTime: "40-45分鐘",
+                totalCost: "油資",
+                badges: ["recommended"],
+                tags: ["省停車費", "靈活"],
+                summary: { time: "40-45", cost: "$", convenience: "★★★★☆" },
+                steps: [
+                    "老公騎機車載小孩和Dolly",
+                    "先送到北峰國小附幼",
+                    "老公再載Dolly到公司",
+                    "老公從公司騎回家或上班"
+                ],
+                pros: ["時間最短", "停車方便", "費用最低"],
+                cons: ["雨天麻煩", "冬天冷", "老公機車要兩台或最後要回家"],
+                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市"
+            },
+            {
+                rank: 3,
+                name: "方案C：分段接送（自己開車）",
+                shortName: "自己開車",
+                totalTime: "50-60分鐘",
+                totalCost: "油資 + 月租停車費 ~$5000-7000",
+                badges: ["alternative"],
+                tags: ["獨立自主", "可彈性"],
+                summary: { time: "50-60", cost: "$$$$", convenience: "★★★☆☆" },
+                steps: [
+                    "Dolly自己從汐止開車",
+                    "先到北峰國小附幼接/送小孩",
+                    "開車到公司，松仁路100號",
+                    "下班開回汐止或老公接"
+                ],
+                pros: ["時間完全自主", "不用配合老公", "可隨時改變計畫"],
+                cons: ["費用最高", "市區停車不方便", "開車時間長會累"],
+                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市"
+            },
+            {
+                rank: 4,
+                name: "方案D：先送小孩再搭大眾交通",
+                shortName: "開車+公車",
+                totalTime: "55-65分鐘",
+                totalCost: "油資 + 公車費",
+                badges: ["alternative"],
+                tags: ["省停車費", "環保"],
+                summary: { time: "55-65", cost: "$$", convenience: "★★☆☆☆" },
+                steps: [
+                    "從汐止開車到北峰國小",
+                    "送小孩進教室後",
+                    "開車到南港或昆陽轉乘公車",
+                    "搭公車到松仁路公司附近"
+                ],
+                pros: ["不用在公司附近找停車位", "避開信義區塞車"],
+                cons: ["轉乘麻煩", "時間難掌控", "下雨天麻煩"],
+                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/昆陽捷運站+台北市/松仁路100號+台北市"
+            },
+            {
+                rank: 5,
+                name: "方案E：雨天備案（全程大眾交通）",
+                shortName: "雨天備案",
+                totalTime: "60-70分鐘",
+                totalCost: "捷運+公車費 ~$60/趟",
+                badges: ["alternative"],
+                tags: ["雨天首選", "最安全"],
+                summary: { time: "60-70", cost: "$$", convenience: "★★★☆☆" },
+                steps: [
+                    "從汐止搭區間車到南港展覽館站",
+                    "轉捷運板南線到市政府或昆陽",
+                    "搭公車到松仁路公司",
+                    "回程同理或老公接"
+                ],
+                pros: ["風雨無阻", "不用找停車位", "可工作/休息"],
+                cons: ["時間最長", "人多擠", "小孩容易不耐煩"],
+                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市/@25.036,121.577,13z/data=!4m14!4m13!1m5!1m1!1s0x3442a98f2c3a3a9b:0x1b8f9e3c8c9b3a9e!2m2!1d121.6033!2d25.0406!1m5!1m1!1s0x3442abb0e6e0e0e0:0xe6e0e0e0e0e0e0e0!2m2!1d121.5685!2d25.0333!3e3"
+            }
         ];
 
-        function render() {
+        // ========== 幼兒園資料 ==========
+        const tuchengData = [
+            { rank: 1, name: "土城國小附設幼兒園", address: "土城區興城路17號", time: 11, type: "公立", convenience: "good", tags: ["國小校內", "空間大"], age: "2-5歲", people: 226 },
+            { rank: 2, name: "頂埔國小附設幼兒園", address: "土城區頂埔里中央路三段247號", time: 12, type: "公立", convenience: "good", tags: ["國小校內"], age: "2-5歲", people: 136 },
+            { rank: 3, name: "樂利國小附設幼兒園", address: "土城區樂利路100號", time: 12, type: "公立", convenience: "good", tags: ["國小校內"], age: "2-5歲", people: 150 },
+            { rank: 4, name: "廣福國小附設幼兒園", address: "土城區廣福路98號", time: 13, type: "公立", convenience: "good", tags: ["國小校內"], age: "2-5歲", people: 196 },
+            { rank: 5, name: "清水國小附設幼兒園", address: "土城區清水路212號", time: 13, type: "公立", convenience: "good", tags: ["國小校內"], age: "2-5歲", people: 196 },
+            { rank: 6, name: "安和國小附設幼兒園", address: "土城區安和路一段80號", time: 14, type: "公立", convenience: "good", tags: ["國小校內"], age: "2-5歲", people: 106 },
+            { rank: 7, name: "市立土城幼兒園", address: "土城區中山路91號", time: 11, type: "公立", convenience: "good", tags: ["獨立校區"], age: "2-5歲", people: 180 },
+            { rank: 8, name: "市立土城幼兒園大頂埔分班", address: "土城區大頂埔路20號", time: 13, type: "公立", convenience: "warning", tags: ["分班"], age: "2-5歲", people: 90 },
+            { rank: 9, name: "市立土城幼兒園清水分班", address: "土城區清水路212號", time: 13, type: "公立", convenience: "warning", tags: ["分班"], age: "2-5歲", people: 45 },
+            { rank: 10, name: "土城國中附設幼兒園", address: "土城區明德路一段100號", time: 12, type: "公立", convenience: "good", tags: ["國中校內"], age: "2-5歲", people: 106 },
+            { rank: 11, name: "海工非營利幼兒園", address: "土城區海山路40號", time: 15, type: "非營利", convenience: "good", tags: ["非營利"], age: "2-5歲", people: 60 },
+            { rank: 12, name: "中正非營利幼兒園", address: "土城區中正路一段58號", time: 12, type: "非營利", convenience: "good", tags: ["非營利"], age: "2-5歲", people: 136 },
+            { rank: 13, name: "清水高中非營利幼兒園", address: "土城區清水路287號", time: 14, type: "非營利", convenience: "good", tags: ["非營利"], age: "2-5歲", people: 90 },
+            { rank: 14, name: "明德非營利幼兒園", address: "土城區明德路二段120號", time: 14, type: "非營利", convenience: "good", tags: ["非營利"], age: "2-5歲", people: 106 }
+        ];
+
+        const sanxiaData = [
+            { rank: 1, name: "市立三峽幼兒園本園", address: "三峽區溪東路218巷1號2樓", time: 4, type: "公立", convenience: "warning", tags: ["巷內臨停"], age: "3-5歲" },
+            { rank: 2, name: "市立三峽幼兒園中興分班", address: "三峽區介壽路二段136巷63號", time: 4, type: "公立", convenience: "warning", tags: ["巷內臨停"], age: "3-5歲" },
+            { rank: 3, name: "市立三峽幼兒園龍埔分班", address: "三峽區三樹路214巷9號", time: 4, type: "公立", convenience: "warning", tags: ["巷內臨停"], age: "3-5歲" },
+            { rank: 4, name: "龍埔成長非營利幼兒園", address: "三峽區大學路6號", time: 9, type: "非營利", convenience: "excellent", tags: ["室外2000坪", "有接送區"], age: "2-5歲", people: 90 },
+            { rank: 5, name: "介壽國小附設幼兒園", address: "三峽區大同路1號", time: 7, type: "公立", convenience: "good", tags: ["國小校內", "空間大"], age: "2-5歲", people: 212 },
+            { rank: 6, name: "安溪非營利幼兒園", address: "三峽區中華路42號", time: 7, type: "非營利", convenience: "warning", tags: ["空間較小"], age: "2-5歲", people: 136 },
+            { rank: 7, name: "中園非營利幼兒園", address: "三峽區弘園街22號", time: 8, type: "非營利", convenience: "good", tags: ["室外470坪"], age: "2-5歲", people: 136 },
+            { rank: 8, name: "建安國小附設幼兒園", address: "三峽區建安路67號", time: 8, type: "公立", convenience: "good", tags: ["國小校內", "空間大"], age: "3-5歲", people: 30 },
+            { rank: 9, name: "安溪國中附設幼兒園", address: "三峽區溪安街181號", time: 9, type: "公立", convenience: "good", tags: ["國中校內", "空間大"], age: "2-5歲", people: 166 },
+            { rank: 10, name: "國教院員工子女非營利幼兒園", address: "三峽區三樹路2號", time: 8, type: "非營利", convenience: "warning", tags: ["空間適中"], age: "2-5歲", people: 75 },
+            { rank: 11, name: "北大非營利幼兒園", address: "三峽區國光街100號", time: 9, type: "非營利", convenience: "good", tags: ["室外1100坪"], age: "2-5歲", people: 182 },
+            { rank: 12, name: "三峽國中附設幼兒園", address: "三峽區復興路238號", time: 10, type: "公立", convenience: "good", tags: ["國中校內", "空間大"], age: "2-5歲", people: 76 },
+            { rank: 13, name: "三峽國小附設幼兒園", address: "三峽區中山路16號", time: 11, type: "公立", convenience: "good", tags: ["國小校內", "空間大"], age: "3-5歲", people: 180 },
+            { rank: 14, name: "民義國小附設幼兒園", address: "三峽區白雞路40號", time: 11, type: "公立", convenience: "warning", tags: ["偏鄉"], age: "3-5歲", people: 30 },
+            { rank: 15, name: "大埔國小附設幼兒園", address: "三峽區大埔路130號", time: 14, type: "公立", convenience: "warning", tags: ["偏鄉"], age: "3-5歲", people: 60 },
+            { rank: 16, name: "漢翔非營利幼兒園", address: "三峽區大學路218號", time: 10, type: "非營利", convenience: "warning", tags: ["室外僅125坪"], age: "2-5歲", people: 76 },
+            { rank: 17, name: "插角森林實驗小學附設幼兒園", address: "三峽區插角里39號", time: 20, type: "公立", convenience: "warning", tags: ["偏鄉"], age: "3-5歲", people: 30 },
+            { rank: 18, name: "五寮國小附設幼兒園", address: "三峽區五寮里69號", time: 25, type: "公立", convenience: "warning", tags: ["偏鄉"], age: "3-5歲", people: 30 },
+            { rank: 19, name: "有木國小附設幼兒園", address: "三峽區有木里131號", time: 30, type: "公立", convenience: "warning", tags: ["偏鄉"], age: "3-5歲", people: 30 }
+        ];
+
+        let currentData = sanxiaData;
+
+        // ========== Tab 切換 ==========
+        document.querySelectorAll('.tabs > .tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tabs > .tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+                document.getElementById(tab.dataset.tab + '-section').classList.add('active');
+            });
+        });
+
+        // ========== 通勤方案 Render ==========
+        function renderRoutes() {
+            const filter = document.getElementById('routeFilter').value;
+            let filtered = commuteData;
+            
+            if (filter === 'best') filtered = commuteData.filter(r => r.badges.includes('best'));
+            if (filter === 'fastest') filtered = commuteData.slice(0, 2);
+            if (filter === 'cheapest') filtered = commuteData.filter(r => r.tags.includes('省停車費') || r.tags.includes('雨天首選'));
+            if (filter === 'weather') filtered = [commuteData[4], commuteData[0]];
+            
+            document.getElementById('routeCount').textContent = filtered.length;
+            
+            const results = document.getElementById('routeResults');
+            results.innerHTML = filtered.map(item => {
+                const badgeHtml = item.badges.map(b => {
+                    const labels = { best: '最推薦', recommended: '推薦', alternative: '替代方案' };
+                    return `<span class="card-badge badge-${b}">${labels[b]}</span>`;
+                }).join('');
+                
+                const tagHtml = item.tags.map(tag => `<span class="tag tag-excellent">${tag}</span>`).join('');
+                
+                return `
+                    <div class="route-card ${item.badges.includes('best') ? 'best' : item.badges.includes('recommended') ? 'recommended' : ''}">
+                        <div class="card-header">
+                            <div>
+                                <span class="rank-badge">${item.rank}</span>
+                                <span class="card-title">${item.name}</span>
+                            </div>
+                            ${badgeHtml}
+                        </div>
+                        
+                        <div class="route-summary">
+                            <div class="route-stat">
+                                <div class="route-stat-value">${item.summary.time}</div>
+                                <div class="route-stat-label">分鐘</div>
+                            </div>
+                            <div class="route-stat">
+                                <div class="route-stat-value">${item.summary.cost}</div>
+                                <div class="route-stat-label">費用</div>
+                            </div>
+                            <div class="route-stat">
+                                <div class="route-stat-value">${item.summary.convenience}</div>
+                                <div class="route-stat-label">便利度</div>
+                            </div>
+                        </div>
+                        
+                        <div class="route-steps">
+                            <strong>📋 步驟：</strong>
+                            <ol>
+                                ${item.steps.map(s => `<li>${s}</li>`).join('')}
+                            </ol>
+                        </div>
+                        
+                        <div class="route-pros-cons">
+                            <div class="route-pros">
+                                <strong>✅ 優點</strong>
+                                ${item.pros.map(p => `<div>${p}</div>`).join('')}
+                            </div>
+                            <div class="route-cons">
+                                <strong>⚠️ 缺點</strong>
+                                ${item.cons.map(c => `<div>${c}</div>`).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="convenience-tags">${tagHtml}</div>
+                        
+                        <a class="map-link" href="${item.mapUrl}" target="_blank">
+                            📍 查看 Google Maps 路線
+                        </a>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('routeFilter').addEventListener('change', renderRoutes);
+        renderRoutes();
+
+        // ========== 幼兒園 Render ==========
+        function renderKindergarten() {
             const timeFilter = document.getElementById('filterTime').value;
             const typeFilter = document.getElementById('filterType').value;
-            const convenienceFilter = document.getElementById('filterConvenience').value;
             
-            let filtered = data.filter(item => {
+            let filtered = currentData.filter(item => {
                 if (timeFilter !== 'all' && item.time > parseInt(timeFilter)) return false;
                 if (typeFilter !== 'all' && item.type !== typeFilter) return false;
-                if (convenienceFilter !== 'all' && item.convenience !== convenienceFilter) return false;
                 return true;
             });
 
@@ -289,6 +564,7 @@
 
             results.innerHTML = filtered.map(item => `
                 <div class="kindergarten-card ${item.rank <= 5 ? 'top' : ''}">
+                    <a href="https://www.google.com/maps/dir/橫溪路99巷77號,三峽區,新北市/${encodeURIComponent(item.address)}" target="_blank">
                     <div class="card-header">
                         <div>
                             <span class="rank-badge">${item.rank}</span>
@@ -298,22 +574,31 @@
                     </div>
                     <div class="card-distance">🚗 ${item.time} 分鐘 <small>(開車)</small></div>
                     <div class="card-info">
-                        <div class="info-item">📍 <strong>地址：</strong>${item.address}</div>
-                        <div class="info-item">👶 <strong>招收：</strong>${item.age}</div>
-                        ${item.people ? `<div class="info-item">👥 <strong>名額：</strong>${item.people}人</div>` : ''}
+                        📍 ${item.address} &nbsp;|&nbsp; 👶 ${item.age}
+                        ${item.people ? `&nbsp;|&nbsp; 👥 ${item.people}人` : ''}
                     </div>
                     <div class="convenience-tags">
                         ${item.tags.map(tag => `<span class="tag tag-${item.convenience}">${tag}</span>`).join('')}
                     </div>
+                    </a>
                 </div>
             `).join('');
         }
 
-        document.querySelectorAll('select').forEach(select => {
-            select.addEventListener('change', render);
+        document.querySelectorAll('#kindergarten-section .tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('#kindergarten-section .tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentData = tab.dataset.area === 'tucheng' ? tuchengData : sanxiaData;
+                renderKindergarten();
+            });
         });
 
-        render();
+        document.querySelectorAll('#kindergarten-section select').forEach(select => {
+            select.addEventListener('change', renderKindergarten);
+        });
+
+        renderKindergarten();
     </script>
 </body>
 </html>
