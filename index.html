@@ -218,6 +218,15 @@
             font-size: 12px;
         }
         .route-pros { background: #e8f5e9; }
+        .route-note { 
+            background: #fff3e0; 
+            color: #e65100; 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            font-size: 13px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
         .route-cons { background: #ffebee; }
         .route-pros strong, .route-cons strong { display: block; margin-bottom: 5px; }
         
@@ -315,16 +324,16 @@
 
     <script>
         // ========== 通勤方案資料 ==========
-        // 情況：老公在美麗華上班，Dolly在松仁路100號上班，只有一台車，兩個小孩
+        // 情況：老公在美麗華上班（每週2天），Dolly在松仁路100號上班，只有一台車，兩個小孩，週五老公要帶孩子去早療
         const commuteData = [
             {
                 rank: 1,
-                name: "方案A：老公開車送全家",
+                name: "方案A：老公開車送全家（老公上班日）",
                 shortName: "老公開車",
                 totalTime: "45-50分鐘",
                 totalCost: "油資 + 停車費",
                 badges: ["best", "recommended"],
-                tags: ["最省事", "不用趕"],
+                tags: ["最省事", "不用趕", "僅老公上班日"],
                 summary: { time: "45-50", cost: "$$$", convenience: "★★★★★" },
                 steps: [
                     "老公早上從汐止開車出發",
@@ -333,8 +342,9 @@
                     "Dolly 從美麗華搭公車或 Uber 到松仁路公司"
                 ],
                 pros: ["不需要自己趕時間", "小孩有人照顧到進教室", "風雨無慮"],
-                cons: ["Dolly 要自己從美麗華到公司", "需要配合老公行程"],
-                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/美麗華百樂園+台北市/松仁路100號+台北市"
+                cons: ["Dolly 要自己從美麗華到公司", "需配合老公行程", "週五無法使用"],
+                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/美麗華百樂園+台北市/松仁路100號+台北市",
+                note: "⚠️ 限老公進公司日使用，週五除外"
             },
             {
                 rank: 2,
@@ -352,8 +362,9 @@
                     "下班開回汐止或老公接"
                 ],
                 pros: ["時間完全自主", "不用配合老公", "可隨時改變計畫"],
-                cons: ["費用最高", "市區停車不方便", "只有一台車老公要自己上班"],
-                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市"
+                cons: ["費用最高", "市區停車不方便", "老公要自己上班或接送"],
+                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市",
+                note: "⚠️ 週五首選"
             },
             {
                 rank: 3,
@@ -372,7 +383,8 @@
                 ],
                 pros: ["不用在公司附近找停車位", "避開信義區塞車"],
                 cons: ["轉乘麻煩", "時間難掌控", "下雨天麻煩", "老公要自己上班"],
-                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/昆陽捷運站+台北市/松仁路100號+台北市"
+                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/昆陽捷運站+台北市/松仁路100號+台北市",
+                note: "⚠️ 週五可考慮"
             },
             {
                 rank: 4,
@@ -390,6 +402,11 @@
                     "回程同理或老公接"
                 ],
                 pros: ["風雨無阻", "不用找停車位", "可工作/休息"],
+                cons: ["時間最長", "人多擠", "小孩容易不耐煩", "老公要自己上班"],
+                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市/@25.036,121.577,13z/data=!4m14!4m13!1m5!1m1!1s0x3442a98f2c3a3a9b:0x1b8f9e3c8c9b3a9e!2m2!1d121.6033!2d25.0406!1m5!1m1!1s0x3442abb0e6e0e0e0:0xe6e0e0e0e0e0e0e0!2m2!1d121.5685!2d25.0333!3e3",
+                note: "⚠️ 週五適用"
+            }
+        ];
                 cons: ["時間最長", "人多擠", "小孩容易不耐煩", "老公要自己上班"],
                 mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市/@25.036,121.577,13z/data=!4m14!4m13!1m5!1m1!1s0x3442a98f2c3a3a9b:0x1b8f9e3c8c9b3a9e!2m2!1d121.6033!2d25.0406!1m5!1m1!1s0x3442abb0e6e0e0e0:0xe6e0e0e0e0e0e0e0!2m2!1d121.5685!2d25.0333!3e3"
             }
@@ -513,6 +530,8 @@
                         </div>
                         
                         <div class="convenience-tags">${tagHtml}</div>
+                        
+                        ${item.note ? `<div class="route-note">${item.note}</div>` : ''}
                         
                         <a class="map-link" href="${item.mapUrl}" target="_blank">
                             📍 查看 Google Maps 路線
