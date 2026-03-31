@@ -275,7 +275,7 @@
                 </select>
             </div>
             <div class="results">
-                <div class="results-header">共 <strong id="routeCount">5</strong> 種通勤方案</div>
+                <div class="results-header">共 <strong id="routeCount">4</strong> 種通勤方案</div>
                 <div id="routeResults"></div>
             </div>
         </div>
@@ -315,10 +315,11 @@
 
     <script>
         // ========== 通勤方案資料 ==========
+        // 情況：老公在美麗華上班，Dolly在松仁路100號上班，只有一台車，兩個小孩
         const commuteData = [
             {
                 rank: 1,
-                name: "方案A：老公全程開車",
+                name: "方案A：老公開車送全家",
                 shortName: "老公開車",
                 totalTime: "45-50分鐘",
                 totalCost: "油資 + 停車費",
@@ -327,36 +328,17 @@
                 summary: { time: "45-50", cost: "$$$", convenience: "★★★★★" },
                 steps: [
                     "老公早上從汐止開車出發",
-                    "先送小孩到北峰國小附幼",
-                    "老公繼續開到公司，松仁路100號",
-                    "Dolly 到公司與老公會合"
+                    "先送兩個小孩到北峰國小附幼",
+                    "老公繼續開到美麗華上班",
+                    "Dolly 從美麗華搭公車或 Uber 到松仁路公司"
                 ],
                 pros: ["不需要自己趕時間", "小孩有人照顧到進教室", "風雨無慮"],
-                cons: ["老公時間不彈性", "需要配合老公行程"],
-                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市"
+                cons: ["Dolly 要自己從美麗華到公司", "需要配合老公行程"],
+                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/美麗華百樂園+台北市/松仁路100號+台北市"
             },
             {
                 rank: 2,
-                name: "方案B：機車全程（老公載）",
-                shortName: "老公騎機車",
-                totalTime: "40-45分鐘",
-                totalCost: "油資",
-                badges: ["recommended"],
-                tags: ["省停車費", "靈活"],
-                summary: { time: "40-45", cost: "$", convenience: "★★★★☆" },
-                steps: [
-                    "老公騎機車載小孩和Dolly",
-                    "先送到北峰國小附幼",
-                    "老公再載Dolly到公司",
-                    "老公從公司騎回家或上班"
-                ],
-                pros: ["時間最短", "停車方便", "費用最低"],
-                cons: ["雨天麻煩", "冬天冷", "老公機車要兩台或最後要回家"],
-                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市"
-            },
-            {
-                rank: 3,
-                name: "方案C：分段接送（自己開車）",
+                name: "方案B：Dolly自己開車",
                 shortName: "自己開車",
                 totalTime: "50-60分鐘",
                 totalCost: "油資 + 月租停車費 ~$5000-7000",
@@ -365,17 +347,17 @@
                 summary: { time: "50-60", cost: "$$$$", convenience: "★★★☆☆" },
                 steps: [
                     "Dolly自己從汐止開車",
-                    "先到北峰國小附幼接/送小孩",
-                    "開車到公司，松仁路100號",
+                    "先到北峰國小附幼送兩個小孩",
+                    "開車到松仁路100號公司",
                     "下班開回汐止或老公接"
                 ],
                 pros: ["時間完全自主", "不用配合老公", "可隨時改變計畫"],
-                cons: ["費用最高", "市區停車不方便", "開車時間長會累"],
+                cons: ["費用最高", "市區停車不方便", "只有一台車老公要自己上班"],
                 mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市"
             },
             {
-                rank: 4,
-                name: "方案D：先送小孩再搭大眾交通",
+                rank: 3,
+                name: "方案C：開車+公車",
                 shortName: "開車+公車",
                 totalTime: "55-65分鐘",
                 totalCost: "油資 + 公車費",
@@ -384,17 +366,17 @@
                 summary: { time: "55-65", cost: "$$", convenience: "★★☆☆☆" },
                 steps: [
                     "從汐止開車到北峰國小",
-                    "送小孩進教室後",
+                    "送兩個小孩進教室後",
                     "開車到南港或昆陽轉乘公車",
                     "搭公車到松仁路公司附近"
                 ],
                 pros: ["不用在公司附近找停車位", "避開信義區塞車"],
-                cons: ["轉乘麻煩", "時間難掌控", "下雨天麻煩"],
+                cons: ["轉乘麻煩", "時間難掌控", "下雨天麻煩", "老公要自己上班"],
                 mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/昆陽捷運站+台北市/松仁路100號+台北市"
             },
             {
-                rank: 5,
-                name: "方案E：雨天備案（全程大眾交通）",
+                rank: 4,
+                name: "方案D：雨天備案（大眾交通）",
                 shortName: "雨天備案",
                 totalTime: "60-70分鐘",
                 totalCost: "捷運+公車費 ~$60/趟",
@@ -408,7 +390,7 @@
                     "回程同理或老公接"
                 ],
                 pros: ["風雨無阻", "不用找停車位", "可工作/休息"],
-                cons: ["時間最長", "人多擠", "小孩容易不耐煩"],
+                cons: ["時間最長", "人多擠", "小孩容易不耐煩", "老公要自己上班"],
                 mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市/@25.036,121.577,13z/data=!4m14!4m13!1m5!1m1!1s0x3442a98f2c3a3a9b:0x1b8f9e3c8c9b3a9e!2m2!1d121.6033!2d25.0406!1m5!1m1!1s0x3442abb0e6e0e0e0:0xe6e0e0e0e0e0e0e0!2m2!1d121.5685!2d25.0333!3e3"
             }
         ];
