@@ -407,10 +407,6 @@
                 note: "⚠️ 週五適用"
             }
         ];
-                cons: ["時間最長", "人多擠", "小孩容易不耐煩", "老公要自己上班"],
-                mapUrl: "https://www.google.com/maps/dir/汐止火車站+新北市/北峰國民小學+新北市/松仁路100號+台北市/@25.036,121.577,13z/data=!4m14!4m13!1m5!1m1!1s0x3442a98f2c3a3a9b:0x1b8f9e3c8c9b3a9e!2m2!1d121.6033!2d25.0406!1m5!1m1!1s0x3442abb0e6e0e0e0:0xe6e0e0e0e0e0e0e0!2m2!1d121.5685!2d25.0333!3e3"
-            }
-        ];
 
         // ========== 幼兒園資料 ==========
         const tuchengData = [
@@ -473,7 +469,7 @@
             if (filter === 'best') filtered = commuteData.filter(r => r.badges.includes('best'));
             if (filter === 'fastest') filtered = commuteData.slice(0, 2);
             if (filter === 'cheapest') filtered = commuteData.filter(r => r.tags.includes('省停車費') || r.tags.includes('雨天首選'));
-            if (filter === 'weather') filtered = [commuteData[4], commuteData[0]];
+            if (filter === 'weather') filtered = [commuteData[3], commuteData[0]];
             
             document.getElementById('routeCount').textContent = filtered.length;
             
