@@ -325,7 +325,7 @@
     <script>
         // ========== 通勤方案資料 ==========
         // 情況：老公在美麗華上班（每週2天），Dolly在松仁路100號上班，只有一台車，兩個小孩，週五老公要帶孩子去早療
-        const commuteData = [
+        var commuteData = [
             {
                 rank: 1,
                 name: "方案A：老公開車送全家（老公上班日）",
@@ -413,7 +413,7 @@
         ];
 
         // ========== 幼兒園資料 ==========
-        const tuchengData = [
+        var tuchengData = [
             { rank: 1, name: "土城國小附設幼兒園", address: "土城區興城路17號", time: 11, type: "公立", convenience: "good", tags: ["國小校內", "空間大"], age: "2-5歲", people: 226 },
             { rank: 2, name: "頂埔國小附設幼兒園", address: "土城區頂埔里中央路三段247號", time: 12, type: "公立", convenience: "good", tags: ["國小校內"], age: "2-5歲", people: 136 },
             { rank: 3, name: "樂利國小附設幼兒園", address: "土城區樂利路100號", time: 12, type: "公立", convenience: "good", tags: ["國小校內"], age: "2-5歲", people: 150 },
@@ -430,7 +430,7 @@
             { rank: 14, name: "明德非營利幼兒園", address: "土城區明德路二段120號", time: 14, type: "非營利", convenience: "good", tags: ["非營利"], age: "2-5歲", people: 106 }
         ];
 
-        const sanxiaData = [
+        var sanxiaData = [
             { rank: 1, name: "市立三峽幼兒園本園", address: "三峽區溪東路218巷1號2樓", time: 4, type: "公立", convenience: "warning", tags: ["巷內臨停"], age: "3-5歲" },
             { rank: 2, name: "市立三峽幼兒園中興分班", address: "三峽區介壽路二段136巷63號", time: 4, type: "公立", convenience: "warning", tags: ["巷內臨停"], age: "3-5歲" },
             { rank: 3, name: "市立三峽幼兒園龍埔分班", address: "三峽區三樹路214巷9號", time: 4, type: "公立", convenience: "warning", tags: ["巷內臨停"], age: "3-5歲" },
