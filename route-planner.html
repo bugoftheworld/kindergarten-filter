@@ -61,28 +61,78 @@
             border-radius: 10px; text-align: center; font-weight: 600;
         }
         .map-link:hover { background: #3367d6; }
+        .version-switch {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        .version-switch a {
+            color: #666;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .version-switch a:hover { background: #e0e0e0; }
+        .version-switch a.active {
+            background: #5ebdbd;
+            color: white;
+        }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚗 通勤路線規劃工具</h1>
-        
-        <div class="form-group">
-            <label>📍 從哪裡出發？</label>
-            <select id="start">
-                <option value="汐止住家" selected>汐止住家</option>
-                <option value="汐止火車站">汐止火車站</option>
-            </select>
+        <div class="version-switch">
+            <a href="#" id="btn-xizhi" class="active" onclick="switchVersion('xizhi')">汐止版</a>
+            <a href="#" id="btn-sanxia" onclick="switchVersion('sanxia')">三峽版</a>
         </div>
 
-        <div class="form-group">
-            <label>👶 是否要送小孩去幼兒園？</label>
-            <select id="kindergarten">
-                <option value="無">不需要，直接去公司</option>
-                <option value="北峰國小附幼">北峰國小附設幼兒園</option>
-                <option value="龍埔成長">龍埔成長非營利幼兒園</option>
-                <option value="介壽國小">介壽國小附設幼兒園</option>
-            </select>
+        <h1>🚗 通勤路線規劃工具</h1>
+        
+        <!-- Xizhi Version -->
+        <div id="xizhi-form">
+            <div class="form-group">
+                <label>📍 從哪裡出發？</label>
+                <select id="start-xizhi">
+                    <option value="汐止住家" selected>汐止住家</option>
+                    <option value="汐止火車站">汐止火車站</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>👶 是否要送小孩去幼兒園？</label>
+                <select id="kindergarten-xizhi">
+                    <option value="無">不需要，直接去公司</option>
+                    <option value="北峰國小附幼">北峰國小附設幼兒園</option>
+                    <option value="龍埔成長">龍埔成長非營利幼兒園</option>
+                    <option value="介壽國小">介壽國小附設幼兒園</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Sanxia Version -->
+        <div id="sanxia-form" class="hidden">
+            <div class="form-group">
+                <label>📍 從哪裡出發？</label>
+                <select id="start-sanxia">
+                    <option value="三峽住家" selected>三峽住家</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>👶 是否要送小孩去幼兒園？</label>
+                <select id="kindergarten-sanxia">
+                    <option value="無">不需要，直接去公司</option>
+                    <option value="龍埔成長">龍埔成長非營利幼兒園</option>
+                    <option value="北大非營利">北大非營利幼兒園</option>
+                    <option value="頂埔附幼">頂埔國小附設幼兒園</option>
+                    <option value="介壽附幼">介壽國小附設幼兒園</option>
+                </select>
+            </div>
         </div>
 
         <div class="form-group">
@@ -111,8 +161,8 @@
             <label>🏢 目的地</label>
             <select id="destination">
                 <option value="松仁路公司">松仁路公司（信義區）</option>
+                <option value="Times松勤停車場">Times松勤停車場（月費3800）</option>
                 <option value="美麗華">美麗華（老公公司）</option>
-                <option value="Times松勤停車場">Times松勤停車場（公司停車場）</option>
             </select>
         </div>
 
@@ -125,27 +175,49 @@
     </div>
 
     <script>
+        let currentVersion = 'xizhi';
+
+        function switchVersion(version) {
+            currentVersion = version;
+            document.getElementById('btn-xizhi').className = version === 'xizhi' ? 'active' : '';
+            document.getElementById('btn-sanxia').className = version === 'sanxia' ? 'active' : '';
+            document.getElementById('xizhi-form').className = version === 'xizhi' ? '' : 'hidden';
+            document.getElementById('sanxia-form').className = version === 'sanxia' ? '' : 'hidden';
+            document.getElementById('result').classList.remove('show');
+        }
+
         const locations = {
+            // Xizhi
             '汐止住家': '新北市汐止區大同路二段200號',
             '汐止火車站': '新北市汐止區火車站',
             '北峰國小附幼': '新北市汐止區北峰國民小學',
+            // Sanxia
+            '三峽住家': '新北市三峽區橫溪路99巷青鳥之森',
             '龍埔成長': '新北市三峽區龍埔成長非營利幼兒園',
-            '介壽國小': '新北市三峽區介壽國小',
+            '北大非營利': '新北市三峽區北大非營利幼兒園',
+            '頂埔附幼': '新北市土城區頂埔國小附設幼兒園',
+            '介壽附幼': '新北市三峽區介壽國小附設幼兒園',
+            // Transfer
             '南港站': '台北市南港捷運站',
             '南港展覽館站': '台北市南港展覽館捷運站',
             '後山埤站': '台北市後山埤捷運站',
             '松山火車站': '台北市松山火車站',
             '昆陽站': '台北市昆陽捷運站',
             '南港軟體園區停車場': '台北市南港軟體園區',
+            // Destination
             '松仁路公司': '110台北市信義區信義路五段100號',
-            '美麗華': '台北市美麗華百樂園',
-            'Times松勤停車場': '台北市信義區Times松勤停車場三張里地下停車場B3樓'
+            'Times松勤停車場': '台北市信義區松勤停車場',
+            '美麗華': '台北市美麗華百樂園'
         };
 
         const kindergartenData = {
+            // Xizhi
             '北峰國小附幼': { time: 5, name: '北峰國小附設幼兒園', loc: '新北市汐止區北峰國民小學' },
             '龍埔成長': { time: 8, name: '龍埔成長非營利幼兒園', loc: '新北市三峽區龍埔成長非營利幼兒園' },
-            '介壽國小': { time: 6, name: '介壽國小附設幼兒園', loc: '新北市三峽區介壽國小' }
+            '介壽國小': { time: 6, name: '介壽國小附設幼兒園', loc: '新北市三峽區介壽國小' },
+            // Sanxia
+            '北大非營利': { time: 8, name: '北大非營利幼兒園', loc: '新北市三峽區北大非營利幼兒園' },
+            '頂埔附幼': { time: 15, name: '頂埔國小附設幼兒園', loc: '新北市土城區頂埔國小附設幼兒園' }
         };
 
         const routeData = {
@@ -173,8 +245,11 @@
         };
 
         function calculateRoute() {
-            const start = document.getElementById('start').value;
-            const kindergarten = document.getElementById('kindergarten').value;
+            const startKey = currentVersion === 'xizhi' ? 'start-xizhi' : 'start-sanxia';
+            const kinderKey = currentVersion === 'xizhi' ? 'kindergarten-xizhi' : 'kindergarten-sanxia';
+            
+            const start = document.getElementById(startKey).value;
+            const kindergarten = document.getElementById(kinderKey).value;
             const transport = document.getElementById('transport').value;
             const transfer = document.getElementById('transfer').value;
             const destination = document.getElementById('destination').value;
@@ -186,7 +261,7 @@
             let waypoints = [];
             
             // 如果有送小孩
-            if (kindergarten !== '無') {
+            if (kindergarten !== '無' && kindergartenData[kindergarten]) {
                 const kinder = kindergartenData[kindergarten];
                 totalTime += kinder.time;
                 waypoints.push(kinder.loc);
@@ -206,9 +281,9 @@
                     ];
                 } else {
                     steps = [
-                        '從住家步行到汐止火車站',
-                        '搭區間車到北峰國小附幼附近',
-                        `牽小孩進 ${kinder.name}`
+                        '從住家步行到火車站',
+                        '先送小孩到幼兒園',
+                        '再繼續搭車到公司'
                     ];
                 }
             }
