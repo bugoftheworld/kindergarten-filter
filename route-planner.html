@@ -121,8 +121,18 @@
         <div class="form-group">
             <label>📍 從哪裡出發？</label>
             <select id="start">
-                <option value="汐止火車站">汐止火車站</option>
                 <option value="汐止住家">汐止住家</option>
+                <option value="汐止火車站">汐止火車站</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>👶 是否要送小孩去幼兒園？</label>
+            <select id="kindergarten">
+                <option value="無">不需要，直接去公司</option>
+                <option value="北峰國小附幼">北峰國小附設幼兒園</option>
+                <option value="龍埔成長">龍埔成長非營利幼兒園</option>
+                <option value="介壽國小">介壽國小附設幼兒園</option>
             </select>
         </div>
 
@@ -165,7 +175,13 @@
     </div>
 
     <script>
-        const timeData = {
+        const kindergartenData = {
+            '北峰國小附幼': { time: 5, name: '北峰國小附設幼兒園' },
+            '龍埔成長': { time: 8, name: '龍埔成長非營利幼兒園' },
+            '介壽國小': { time: 6, name: '介壽國小附設幼兒園' }
+        };
+
+        const routeData = {
             '開車': {
                 '無': { time: 45, cost: '$$$', steps: ['開車直接到目的地'] },
                 '南港站': { time: 35, cost: '$$', steps: ['開車到南港站停車', '轉乘捷運板南線', '到站後步行到公司'] },
@@ -197,36 +213,64 @@
 
         function calculateRoute() {
             const start = document.getElementById('start').value;
+            const kindergarten = document.getElementById('kindergarten').value;
             const transport = document.getElementById('transport').value;
             const transfer = document.getElementById('transfer').value;
             const destination = document.getElementById('destination').value;
             
-            let data = timeData[transport][transfer];
+            let data = routeData[transport][transfer] || routeData[transport]['無'];
+            let totalTime = data.time;
+            let steps = [...data.steps];
+            let cost = data.cost;
             
-            if (!data) {
-                data = timeData[transport]['無'];
+            // 如果有送小孩
+            if (kindergarten !== '無') {
+                const kinder = kindergartenData[kindergarten];
+                totalTime += kinder.time;
+                
+                // 在第一步之後插入送小孩的步驟
+                if (transport === '開車') {
+                    steps = [
+                        '從住家開車出發',
+                        `先送兩個小孩到 ${kinder.name}`,
+                        '然後' + steps[0].replace('開車', '再開車'),
+                        ...steps.slice(1)
+                    ];
+                    // 增加費用
+                    cost = cost.replace('$', '$$');
+                } else if (transport === '火車') {
+                    steps = [
+                        '從住家步行到汐止火車站',
+                        '搭區間車到北峰國小附幼附近',
+                        `牽小孩進 ${kinder.name}`,
+                        '再繼續搭車...（火車不便，建議開車或機車）'
+                    ];
+                } else {
+                    steps = [
+                        '從住家騎機車出發',
+                        `先送兩個小孩到 ${kinder.name}`,
+                        '然後' + steps[0].replace('騎機車', '再騎機車'),
+                        ...steps.slice(1)
+                    ];
+                }
             }
             
-            // 調整時間（加上送小孩的時間）
-            let totalTime = data.time + 10; // 假設送小孩增加 10 分鐘
-            
-            // 產生結果
+            // 顯示結果
             const routesDiv = document.getElementById('routes');
+            const kinderBadge = kindergarten !== '無' ? `<span class="recommend-badge">👶 含送小孩</span>` : '';
+            
             routesDiv.innerHTML = `
                 <div class="route-option recommended">
-                    <span class="recommend-badge">最推薦</span>
+                    ${kinderBadge}
                     <div class="route-time">${totalTime} 分鐘</div>
-                    <div class="route-cost">💰 費用：${data.cost}</div>
+                    <div class="route-cost">💰 費用：${cost}</div>
                     <div class="route-steps">
                         <strong>📋 步驟：</strong>
                         <ol>
-                            ${data.steps.map(s => `<li>${s}</li>`).join('')}
+                            ${steps.map(s => `<li>${s}</li>`).join('')}
                         </ol>
                     </div>
                 </div>
-                <p style="color: #666; font-size: 14px;">
-                    💡 提示：選擇「轉乘站/停車點」可以避開信義區的停車問題，通常會比直接開車进去更省時間和費用。
-                </p>
             `;
             
             document.getElementById('result').classList.add('show');
