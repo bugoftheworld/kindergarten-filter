@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>通勤路線規劃工具</title>
     <style>
         * { box-sizing: border-box; }
@@ -69,6 +70,7 @@
         <div class="form-group">
             <label>📍 從哪裡出發？</label>
             <select id="start">
+                <option value="汐止火車站北站" selected>汐止火車站北站（住家）</option>
                 <option value="汐止住家">汐止住家</option>
                 <option value="汐止火車站">汐止火車站</option>
             </select>
@@ -124,6 +126,7 @@
 
     <script>
         const locations = {
+            '汐止火車站北站': '新北市汐止火車站北站',
             '汐止住家': '汐止區,新北市',
             '汐止火車站': '汐止火車站,新北市',
             '北峰國小附幼': '北峰國民小學,新北市',
