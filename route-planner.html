@@ -112,6 +112,18 @@
             font-size: 12px;
             margin-bottom: 8px;
         }
+        .map-container {
+            margin-top: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 300px;
+            background: #eee;
+        }
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -139,9 +151,9 @@
         <div class="form-group">
             <label>🚗 交通方式</label>
             <select id="transport">
-                <option value="開車">開車</option>
-                <option value="火車">火車（區間車）</option>
-                <option value="機車">機車</option>
+                <option value="driving">開車</option>
+                <option value="transit">火車/捷運</option>
+                <option value="walking">機車</option>
             </select>
         </div>
 
@@ -171,43 +183,62 @@
         <div class="result" id="result">
             <h2>📊 推薦路線</h2>
             <div id="routes"></div>
+            <div class="map-container" id="mapContainer">
+                <iframe id="mapFrame" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
         </div>
     </div>
 
     <script>
+        const locations = {
+            '汐止住家': '汐止區,新北市',
+            '汐止火車站': '汐止火車站,新北市',
+            '北峰國小附幼': '北峰國民小學,新北市',
+            '龍埔成長': '龍埔成長非營利幼兒園,三峽區,新北市',
+            '介壽國小': '介壽國小,三峽區,新北市',
+            '南港站': '南港捷運站,台北市',
+            '南港展覽館站': '南港展覽館捷運站,台北市',
+            '後山埤站': '後山埤捷運站,台北市',
+            '松山火車站': '松山火車站,台北市',
+            '昆陽站': '昆陽捷運站,台北市',
+            '南港軟體園區停車場': '南港軟體園區,台北市',
+            '松仁路公司': '松仁路100號,台北市',
+            '美麗華': '美麗華百樂園,台北市'
+        };
+
         const kindergartenData = {
-            '北峰國小附幼': { time: 5, name: '北峰國小附設幼兒園' },
-            '龍埔成長': { time: 8, name: '龍埔成長非營利幼兒園' },
-            '介壽國小': { time: 6, name: '介壽國小附設幼兒園' }
+            '北峰國小附幼': { time: 5, name: '北峰國小附設幼兒園', loc: '北峰國民小學,新北市' },
+            '龍埔成長': { time: 8, name: '龍埔成長非營利幼兒園', loc: '龍埔成長非營利幼兒園,三峽區,新北市' },
+            '介壽國小': { time: 6, name: '介壽國小附設幼兒園', loc: '介壽國小,三峽區,新北市' }
         };
 
         const routeData = {
-            '開車': {
-                '無': { time: 45, cost: '$$$', steps: ['開車直接到目的地'] },
-                '南港站': { time: 35, cost: '$$', steps: ['開車到南港站停車', '轉乘捷運板南線', '到站後步行到公司'] },
-                '南港展覽館站': { time: 35, cost: '$$', steps: ['開車到南港展覽館站停車', '轉乘捷運板南線', '到站後步行到公司'] },
-                '後山埤站': { time: 30, cost: '$$', steps: ['開車到後山埤站停車', '轉乘捷運板南線', '到站後步行到公司'] },
-                '松山火車站': { time: 30, cost: '$$', steps: ['開車到松山火車站停車', '轉乘火車到汐止', '再轉捷運...（較繞）'] },
-                '昆陽站': { time: 35, cost: '$$', steps: ['開車到昆陽站（不好停）', '轉乘捷運', '到站後步行到公司'] },
-                '南港軟體園區停車場': { time: 40, cost: '$', steps: ['開車到南港軟體園區停車', '轉乘捷運板南線', '到站後步行到公司'] }
+            'driving': {
+                '無': { time: 45, cost: '$$$', steps: ['開車直接到目的地'], mode: 'driving' },
+                '南港站': { time: 35, cost: '$$', steps: ['開車到南港站停車', '轉乘捷運板南線', '到站後步行到公司'], mode: 'driving' },
+                '南港展覽館站': { time: 35, cost: '$$', steps: ['開車到南港展覽館站停車', '轉乘捷運板南線', '到站後步行到公司'], mode: 'driving' },
+                '後山埤站': { time: 30, cost: '$$', steps: ['開車到後山埤站停車', '轉乘捷運板南線', '到站後步行到公司'], mode: 'driving' },
+                '松山火車站': { time: 30, cost: '$$', steps: ['開車到松山火車站停車', '轉乘火車到汐止', '再轉捷運...（較繞）'], mode: 'driving' },
+                '昆陽站': { time: 35, cost: '$$', steps: ['開車到昆陽站（不好停）', '轉乘捷運', '到站後步行到公司'], mode: 'driving' },
+                '南港軟體園區停車場': { time: 40, cost: '$', steps: ['開車到南港軟體園區停車', '轉乘捷運板南線', '到站後步行到公司'], mode: 'driving' }
             },
-            '火車': {
-                '無': { time: 40, cost: '$', steps: ['搭區間車直接到松山火車站', '步行到公司'] },
-                '南港站': { time: 35, cost: '$$', steps: ['搭火車到松山站', '轉乘捷運', '到站後步行到公司'] },
-                '南港展覽館站': { time: 40, cost: '$$', steps: ['搭火車到南港站', '轉乘捷運板南線', '到站後步行到公司'] },
-                '後山埤站': { time: 45, cost: '$$', steps: ['搭火車到松山站', '轉乘捷運', '後山埤站步行到公司'] },
-                '松山火車站': { time: 25, cost: '$', steps: ['搭區間車到松山火車站', '步行或騎 Ubike 到公司'] },
-                '昆陽站': { time: 40, cost: '$$', steps: ['搭火車到南港站', '轉捷運到昆陽站', '步行到公司'] },
-                '南港軟體園區停車場': { time: 50, cost: '$$', steps: ['搭火車到南港站', '步行到軟體園區', '再開車...（不合邏輯）'] }
+            'transit': {
+                '無': { time: 40, cost: '$', steps: ['搭區間車直接到松山火車站', '步行到公司'], mode: 'transit' },
+                '南港站': { time: 35, cost: '$$', steps: ['搭火車到松山站', '轉乘捷運', '到站後步行到公司'], mode: 'transit' },
+                '南港展覽館站': { time: 40, cost: '$$', steps: ['搭火車到南港站', '轉乘捷運板南線', '到站後步行到公司'], mode: 'transit' },
+                '後山埤站': { time: 45, cost: '$$', steps: ['搭火車到松山站', '轉乘捷運', '後山埤站步行到公司'], mode: 'transit' },
+                '松山火車站': { time: 25, cost: '$', steps: ['搭區間車到松山火車站', '步行或騎 Ubike 到公司'], mode: 'transit' },
+                '昆陽站': { time: 40, cost: '$$', steps: ['搭火車到南港站', '轉捷運到昆陽站', '步行到公司'], mode: 'transit' },
+                '南港軟體園區停車場': { time: 50, cost: '$$', steps: ['搭火車到南港站', '步行到軟體園區', '再開車...（不合邏輯）'], mode: 'transit' }
             },
-            '機車': {
-                '無': { time: 35, cost: '$', steps: ['騎機車直接到目的地'] },
-                '南港站': { time: 30, cost: '$', steps: ['騎機車到南港站停車格', '轉乘捷運'] },
-                '南港展覽館站': { time: 30, cost: '$', steps: ['騎機車到南港展覽館站', '轉乘捷運'] },
-                '後山埤站': { time: 25, cost: '$', steps: ['騎機車到後山埤站', '轉乘捷運'] },
-                '松山火車站': { time: 25, cost: '$', steps: ['騎機車到松山火車站', '轉火車或步行'] },
-                '昆陽站': { time: 25, cost: '$', steps: ['騎機車到昆陽站', '轉乘捷運'] },
-                '南港軟體園區停車場': { time: 35, cost: '$', steps: ['騎機車到南港軟體園區', '轉乘捷運'] }
+            'walking': {
+                '無': { time: 35, cost: '$', steps: ['騎機車直接到目的地'], mode: 'driving' },
+                '南港站': { time: 30, cost: '$', steps: ['騎機車到南港站停車格', '轉乘捷運'], mode: 'driving' },
+                '南港展覽館站': { time: 30, cost: '$', steps: ['騎機車到南港展覽館站', '轉乘捷運'], mode: 'driving' },
+                '後山埤站': { time: 25, cost: '$', steps: ['騎機車到後山埤站', '轉乘捷運'], mode: 'driving' },
+                '松山火車站': { time: 25, cost: '$', steps: ['騎機車到松山火車站', '轉火車或步行'], mode: 'driving' },
+                '昆陽站': { time: 25, cost: '$', steps: ['騎機車到昆陽站', '轉乘捷運'], mode: 'driving' },
+                '南港軟體園區停車場': { time: 35, cost: '$', steps: ['騎機車到南港軟體園區', '轉乘捷運'], mode: 'driving' }
             }
         };
 
@@ -222,38 +253,49 @@
             let totalTime = data.time;
             let steps = [...data.steps];
             let cost = data.cost;
+            let waypoints = [];
+            let travelMode = data.mode;
             
             // 如果有送小孩
             if (kindergarten !== '無') {
                 const kinder = kindergartenData[kindergarten];
                 totalTime += kinder.time;
+                waypoints.push(kinder.loc);
                 
-                // 在第一步之後插入送小孩的步驟
-                if (transport === '開車') {
+                if (transport === 'driving') {
                     steps = [
                         '從住家開車出發',
                         `先送兩個小孩到 ${kinder.name}`,
                         '然後' + steps[0].replace('開車', '再開車'),
                         ...steps.slice(1)
                     ];
-                    // 增加費用
                     cost = cost.replace('$', '$$');
-                } else if (transport === '火車') {
-                    steps = [
-                        '從住家步行到汐止火車站',
-                        '搭區間車到北峰國小附幼附近',
-                        `牽小孩進 ${kinder.name}`,
-                        '再繼續搭車...（火車不便，建議開車或機車）'
-                    ];
-                } else {
+                } else if (transport === 'walking') {
                     steps = [
                         '從住家騎機車出發',
                         `先送兩個小孩到 ${kinder.name}`,
                         '然後' + steps[0].replace('騎機車', '再騎機車'),
                         ...steps.slice(1)
                     ];
+                } else {
+                    steps = [
+                        '從住家步行到汐止火車站',
+                        '搭區間車到北峰國小附幼附近',
+                        `牽小孩進 ${kinder.name}`,
+                        '再繼續搭車...（火車不便，建議開車或機車）'
+                    ];
                 }
             }
+            
+            // 建立 Google Maps Embed URL
+            const origin = encodeURIComponent(locations[start]);
+            const dest = encodeURIComponent(locations[destination]);
+            const waypointsStr = waypoints.length > 0 ? '&waypoints=' + encodeURIComponent(waypoints.join('|')) : '';
+            
+            const embedUrl = `https://www.google.com/maps/embed/v1/directions?key=&origin=${origin}&destination=${dest}${waypointsStr}&mode=${travelMode}`;
+            
+            // 嘗試使用無 API key 的 Embed（會顯示搜尋結果）
+            const simpleEmbedUrl = `https://www.google.com/maps/dir/${encodeURIComponent(locations[start])}/${encodeURIComponent(locations[destination])}`;
             
             // 顯示結果
             const routesDiv = document.getElementById('routes');
@@ -272,6 +314,9 @@
                     </div>
                 </div>
             `;
+            
+            // 更新地圖
+            document.getElementById('mapFrame').src = simpleEmbedUrl;
             
             document.getElementById('result').classList.add('show');
         }
