@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>通勤路線規劃工具</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 24px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        select {
+            width: 100%; padding: 12px; border: 2px solid #e0e0e0;
+            border-radius: 10px; font-size: 16px; background: white;
+        }
+        select:focus { border-color: #5ebdbd; outline: none; }
+        button {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        .result { margin-top: 24px; padding: 20px; background: #f8f9fa; border-radius: 12px; display: none; }
+        .result.show { display: block; }
+        .result h2 { margin-top: 0; color: #2c3e50; }
+        .route-option {
+            padding: 16px; background: white; border-radius: 10px;
+            margin-bottom: 12px; border-left: 4px solid #5ebdbd;
+        }
+        .route-option.recommended { border-left-color: #ff6b6b; background: #fff5f5; }
+        .route-time { font-size: 24px; font-weight: bold; color: #5ebdbd; }
+        .route-cost { color: #666; font-size: 14px; }
+        .route-steps {
+            margin-top: 12px; padding: 12px; background: #f0f0f0;
+            border-radius: 8px; font-size: 14px;
+        }
+        .route-steps ol { margin: 8px 0 0 0; padding-left: 20px; }
+        .recommend-badge {
+            display: inline-block; background: #ff6b6b; color: white;
+            padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 8px;
+        }
+        .map-link {
+            display: block; margin-top: 16px; padding: 14px;
+            background: #4285f4; color: white; text-decoration: none;
+            border-radius: 10px; text-align: center; font-weight: 600;
+        }
+        .map-link:hover { background: #3367d6; }
+        .version-switch {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        .version-switch a {
+            color: #666;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .version-switch a:hover { background: #e0e0e0; }
+        .version-switch a.active {
+            background: #5ebdbd;
+            color: white;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="version-switch">
+            <a href="#" id="btn-xizhi" class="active" onclick="switchVersion('xizhi')">汐止版</a>
+            <a href="#" id="btn-sanxia" onclick="switchVersion('sanxia')">三峽版</a>
+        </div>
+
+        <h1>🚗 通勤路線規劃工具</h1>
+        
+        <!-- Xizhi Version -->
+        <div id="xizhi-form">
+            <div class="form-group">
+                <label>📍 從哪裡出發？</label>
+                <select id="start-xizhi">
+                    <option value="汐止住家" selected>汐止住家</option>
+                    <option value="汐止火車站">汐止火車站</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>👶 是否要送小孩去幼兒園？</label>
+                <select id="kindergarten-xizhi">
+                    <option value="無">不需要，直接去公司</option>
+                    <option value="北峰國小附幼">北峰國小附設幼兒園</option>
+                    <option value="龍埔成長">龍埔成長非營利幼兒園</option>
+                    <option value="介壽國小">介壽國小附設幼兒園</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Sanxia Version -->
+        <div id="sanxia-form" class="hidden">
+            <div class="form-group">
+                <label>📍 從哪裡出發？</label>
+                <select id="start-sanxia">
+                    <option value="三峽住家" selected>三峽住家</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>👶 是否要送小孩去幼兒園？</label>
+                <select id="kindergarten-sanxia">
+                    <option value="無">不需要，直接去公司</option>
+                    <option value="龍埔成長">龍埔成長非營利幼兒園</option>
+                    <option value="北大非營利">北大非營利幼兒園</option>
+                    <option value="頂埔附幼">頂埔國小附設幼兒園</option>
+                    <option value="介壽附幼">介壽國小附設幼兒園</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>🚗 交通方式</label>
+            <select id="transport">
+                <option value="driving">開車</option>
+                <option value="transit">火車/捷運</option>
+                <option value="walking">機車</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>🔄 轉乘站/停車點</label>
+            <select id="transfer">
+                <option value="無">不需要轉乘（直接到）</option>
+                <option value="南港站">南港站（捷運）</option>
+                <option value="南港展覽館站">南港展覽館站（捷運）</option>
+                <option value="後山埤站">後山埤站（捷運）</option>
+                <option value="松山火車站">松山火車站（火車）</option>
+                <option value="昆陽站">昆陽站（捷運）</option>
+                <option value="南港軟體園區停車場">南港軟體園區停車場</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>🏢 目的地</label>
+            <select id="destination">
+                <option value="松仁路公司">松仁路公司（信義區）</option>
+                <option value="松勤松仁停車場">松勤松仁停車場（月費3800）</option>
+                <option value="美麗華">美麗華（老公公司）</option>
+            </select>
+        </div>
+
+        <button onclick="calculateRoute()">🔍 計算路線</button>
+
+        <div class="result" id="result">
+            <h2>📊 推薦路線</h2>
+            <div id="routes"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentVersion = 'xizhi';
+
+        function switchVersion(version) {
+            currentVersion = version;
+            document.getElementById('btn-xizhi').className = version === 'xizhi' ? 'active' : '';
+            document.getElementById('btn-sanxia').className = version === 'sanxia' ? 'active' : '';
+            document.getElementById('xizhi-form').className = version === 'xizhi' ? '' : 'hidden';
+            document.getElementById('sanxia-form').className = version === 'sanxia' ? '' : 'hidden';
+            document.getElementById('result').classList.remove('show');
+        }
+
+        const locations = {
+            // Xizhi
+            '汐止住家': '新北市汐止區大同路二段200號',
+            '汐止火車站': '新北市汐止區火車站',
+            '北峰國小附幼': '新北市汐止區北峰國民小學',
+            // Sanxia
+            '三峽住家': '新北市三峽區橫溪路99巷青鳥之森',
+            '龍埔成長': '新北市三峽區龍埔成長非營利幼兒園',
+            '北大非營利': '新北市三峽區北大非營利幼兒園',
+            '頂埔附幼': '新北市土城區頂埔國小附設幼兒園',
+            '介壽附幼': '新北市三峽區介壽國小附設幼兒園',
+            // Transfer
+            '南港站': '台北市南港捷運站',
+            '南港展覽館站': '台北市南港展覽館捷運站',
+            '後山埤站': '台北市後山埤捷運站',
+            '松山火車站': '台北市松山火車站',
+            '昆陽站': '台北市昆陽捷運站',
+            '南港軟體園區停車場': '台北市南港軟體園區',
+            // Destination
+            '松仁路公司': '110台北市信義區信義路五段100號',
+            '松勤松仁停車場': '台北市信義區松勤停車場',
+            '美麗華': '台北市美麗華百樂園'
+        };
+
+        const kindergartenData = {
+            // Xizhi
+            '北峰國小附幼': { time: 5, name: '北峰國小附設幼兒園', loc: '新北市汐止區北峰國民小學' },
+            '龍埔成長': { time: 8, name: '龍埔成長非營利幼兒園', loc: '新北市三峽區龍埔成長非營利幼兒園' },
+            '介壽國小': { time: 6, name: '介壽國小附設幼兒園', loc: '新北市三峽區介壽國小' },
+            // Sanxia
+            '北大非營利': { time: 8, name: '北大非營利幼兒園', loc: '新北市三峽區北大非營利幼兒園' },
+            '頂埔附幼': { time: 15, name: '頂埔國小附設幼兒園', loc: '新北市土城區頂埔國小附設幼兒園' }
+        };
+
+        const routeData = {
+            'driving': {
+                '無': { time: 45, cost: '$$$', steps: ['開車直接到目的地'] },
+                '南港站': { time: 35, cost: '$$', steps: ['開車到南港站停車', '轉乘捷運板南線', '到站後步行到公司'] },
+                '南港展覽館站': { time: 35, cost: '$$', steps: ['開車到南港展覽館站停車', '轉乘捷運板南線', '到站後步行到公司'] },
+                '後山埤站': { time: 30, cost: '$$', steps: ['開車到後山埤站停車', '轉乘捷運板南線', '到站後步行到公司'] },
+                '松山火車站': { time: 30, cost: '$$', steps: ['開車到松山火車站停車', '轉乘火車到汐止', '再轉捷運...（較繞）'] },
+                '昆陽站': { time: 35, cost: '$$', steps: ['開車到昆陽站（不好停）', '轉乘捷運', '到站後步行到公司'] },
+                '南港軟體園區停車場': { time: 40, cost: '$', steps: ['開車到南港軟體園區停車', '轉乘捷運板南線', '到站後步行到公司'] }
+            },
+            'transit': {
+                '無': { time: 40, cost: '$', steps: ['搭區間車直接到松山火車站', '步行到公司'] },
+                '松山火車站': { time: 25, cost: '$', steps: ['搭區間車到松山火車站', '步行或騎 Ubike 到公司'] },
+                '南港站': { time: 35, cost: '$$', steps: ['搭火車到松山站', '轉乘捷運', '到站後步行到公司'] },
+                '後山埤站': { time: 45, cost: '$$', steps: ['搭火車到松山站', '轉乘捷運', '後山埤站步行到公司'] }
+            },
+            'walking': {
+                '無': { time: 35, cost: '$', steps: ['騎機車直接到目的地'] },
+                '南港站': { time: 30, cost: '$', steps: ['騎機車到南港站停車格', '轉乘捷運'] },
+                '後山埤站': { time: 25, cost: '$', steps: ['騎機車到後山埤站', '轉乘捷運'] },
+                '松山火車站': { time: 25, cost: '$', steps: ['騎機車到松山火車站', '轉火車或步行'] }
+            }
+        };
+
+        function calculateRoute() {
+            const startKey = currentVersion === 'xizhi' ? 'start-xizhi' : 'start-sanxia';
+            const kinderKey = currentVersion === 'xizhi' ? 'kindergarten-xizhi' : 'kindergarten-sanxia';
+            
+            const start = document.getElementById(startKey).value;
+            const kindergarten = document.getElementById(kinderKey).value;
+            const transport = document.getElementById('transport').value;
+            const transfer = document.getElementById('transfer').value;
+            const destination = document.getElementById('destination').value;
+            
+            let data = routeData[transport][transfer] || routeData[transport]['無'];
+            let totalTime = data.time;
+            let steps = [...data.steps];
+            let cost = data.cost;
+            let waypoints = [];
+            
+            // 如果有送小孩
+            if (kindergarten !== '無' && kindergartenData[kindergarten]) {
+                const kinder = kindergartenData[kindergarten];
+                totalTime += kinder.time;
+                waypoints.push(kinder.loc);
+                
+                if (transport === 'driving') {
+                    steps = [
+                        '從住家開車出發',
+                        `先送兩個小孩到 ${kinder.name}`,
+                        '然後再開車前往目的地'
+                    ];
+                    cost = cost.replace('$', '$$');
+                } else if (transport === 'walking') {
+                    steps = [
+                        '從住家騎機車出發',
+                        `先送兩個小孩到 ${kinder.name}`,
+                        '再騎機車前往目的地'
+                    ];
+                } else {
+                    steps = [
+                        '從住家步行到火車站',
+                        '先送小孩到幼兒園',
+                        '再繼續搭車到公司'
+                    ];
+                }
+            }
+            
+            // 建立 Google Maps 連結
+            let mapUrl = `https://www.google.com/maps/dir/${encodeURIComponent(locations[start])}`;
+            if (waypoints.length > 0) {
+                mapUrl += `/${encodeURIComponent(waypoints.join('/'))}`;
+            }
+            mapUrl += `/${encodeURIComponent(locations[destination])}`;
+            
+            // 顯示結果
+            const routesDiv = document.getElementById('routes');
+            const kinderBadge = kindergarten !== '無' ? `<span class="recommend-badge">👶 含送小孩</span>` : '';
+            
+            routesDiv.innerHTML = `
+                <div class="route-option recommended">
+                    ${kinderBadge}
+                    <div class="route-time">${totalTime} 分鐘</div>
+                    <div class="route-cost">💰 費用：${cost}</div>
+                    <div class="route-steps">
+                        <strong>📋 步驟：</strong>
+                        <ol>
+                            ${steps.map(s => `<li>${s}</li>`).join('')}
+                        </ol>
+                    </div>
+                    <a href="${mapUrl}" target="_blank" class="map-link">
+                        🗺️ 查看 Google 地圖路線
+                    </a>
+                </div>
+            `;
+            
+            document.getElementById('result').classList.add('show');
+        }
+    </script>
+</body>
+</html>
